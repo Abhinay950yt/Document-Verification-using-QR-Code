@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Document Upload with QR Code</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
+    }
+
+    h1 {
+      color: #004aad;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 2px solid #004aad;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #004aad;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-bottom: 30px;
+    }
+
+    button:hover {
+      background-color: #00307d;
+    }
+
+    #qrCodeContainer {
+      background-color: white;
+      padding: 20px;
+      border: 2px solid #004aad;
+      border-radius: 10px;
+      min-width: 220px;
+      min-height: 220px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #qrCodeContainer img {
+      max-width: 200px;
+      max-height: 200px;
+    }
+
+    p {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload Document</h1>
+
+  <input type="file" id="fileInput" required />
+  <button id="uploadBtn">Upload</button>
+
+  <h2>QR Code:</h2>
+  <div id="qrCodeContainer">No QR code generated yet</div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const qrCodeContainer = document.getElementById('qrCodeContainer');
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Please select a file');
+        return;
+      }
+
+      qrCodeContainer.textContent = 'Uploading...';
+
+      const formData = new FormData();
+      formData.append('document', file);
+
+      try {
+        const response = await fetch('http://192.168.1.8:5000/api/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          qrCodeContainer.innerHTML = `<img src="${data.qrCodeUrl}" alt="QR Code" />`;
+        } else {
+          qrCodeContainer.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        }
+      } catch (error) {
+        console.error('Network error:', error);
+        qrCodeContainer.innerHTML = `<p style="color:red;">Network error</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
